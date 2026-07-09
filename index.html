@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Scanner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🔒 Secret Scanner Tool</h1>
+
+        <p class="subtitle">
+    Detect accidentally exposed passwords, API keys, tokens, and sensitive credentials before they become security risks.
+</p>
+
+        <div class="upload-section">
+            <input type="file" id="fileInput" multiple>
+            <button id="scanBtn">Scan Files</button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="cards">
+
+            <div class="card">
+                <h2 id="filesCount">0</h2>
+                <p>Files Scanned</p>
+            </div>
+
+            <div class="card">
+                <h2 id="secretCount">0</h2>
+                <p>Secrets Found</p>
+            </div>
+
+            <div class="card">
+                <h2 id="highCount">0</h2>
+                <p>High Severity</p>
+            </div>
+
+            <div class="card">
+                <h2 id="mediumCount">0</h2>
+                <p>Medium Severity</p>
+            </div>
+
+        </div>
+
+        <!-- Scan Summary -->
+        <div class="summary" id="summary">
+            <p>Select one or more files and click <strong>Scan Files</strong>.</p>
+        </div>
+
+        <!-- Results -->
+        <div class="result-box">
+
+            <table id="resultTable" style="display:none;">
+
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Line</th>
+                        <th>Secret Type</th>
+                        <th>Severity</th>
+                        <th>Masked Value</th>
+                    </tr>
+                </thead>
+
+                <tbody id="resultBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+       <button id="downloadBtn" class="download-btn">
+    ⬇ Download JSON Report
+</button>
+ <footer>
+    Secret Scanner Tool | Built using HTML, CSS & JavaScript
+</footer>
+
+    </div>
+
+    <script src="script.js"></script>
+   
+
+</body>
+
+</html>
