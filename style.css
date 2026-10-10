@@ -233,3 +233,20 @@ footer{
     color: #c0392b;
     font-size: 14px;
 }
+
+.history-box {
+    margin-top: 30px;
+}
+
+.history-box table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.history-box th,
+.history-box td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}

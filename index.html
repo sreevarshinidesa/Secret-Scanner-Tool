@@ -95,6 +95,23 @@
        <button id="downloadBtn" class="download-btn">
     ⬇ Download JSON Report
 </button>
+
+        <div class="history-box" id="historyBox" style="display:none;">
+            <h2>My past scans</h2>
+            <button id="refreshHistoryBtn">Refresh</button>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Secrets found</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+            <p id="historyEmpty"></p>
+        </div>
+
  <footer>
     Secret Scanner Tool | Built using HTML, CSS & JavaScript
 </footer>

@@ -39,10 +39,16 @@ scanBtn.addEventListener("click", async () => {
 
             if (!text) continue; // skip empty files
 
+                        const token = localStorage.getItem("token");
+            const headers = { "Content-Type": "application/json" };
+            if (token) {
+                headers["Authorization"] = "Bearer " + token;
+            }
+
             const response = await fetch(API_URL, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text })
+                headers: headers,
+                body: JSON.stringify({ text, fileName: file.name })
             });
 
             const data = await response.json();
@@ -111,6 +117,7 @@ Secrets Detected : ${totalSecrets}<br>
 Status : Potential Secret Exposure Detected
 </div>`;
     }
+        loadHistory();
 
 });
 
@@ -153,9 +160,11 @@ function showAuthState() {
         loggedOut.style.display = "none";
         loggedIn.style.display = "block";
         userLabel.textContent = "Logged in as " + email;
+        loadHistory();
     } else {
         loggedOut.style.display = "block";
         loggedIn.style.display = "none";
+        historyBox.style.display = "none";
     }
 }
 
@@ -214,5 +223,59 @@ logoutBtn.addEventListener("click", () => {
     authMessage.textContent = "";
     showAuthState();
 });
+
+// ---------- Past scans ----------
+
+const historyBox = document.getElementById("historyBox");
+const historyBody = document.getElementById("historyBody");
+const historyEmpty = document.getElementById("historyEmpty");
+const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
+
+async function loadHistory() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        historyBox.style.display = "none";
+        return;
+    }
+
+    try {
+        const response = await fetch(BASE_URL + "/scans", {
+            headers: { Authorization: "Bearer " + token }
+        });
+
+        // Token expired or invalid: log the user out
+        if (response.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userEmail");
+            showAuthState();
+            return;
+        }
+
+        const data = await response.json();
+
+        historyBody.innerHTML = "";
+        historyBox.style.display = "block";
+        historyEmpty.textContent = data.scans.length ? "" : "No scans yet.";
+
+        data.scans.forEach(scan => {
+            const row = document.createElement("tr");
+
+            [scan.fileName, scan.totalFindings, new Date(scan.createdAt).toLocaleString()]
+                .forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value;
+                    row.appendChild(cell);
+                });
+
+            historyBody.appendChild(row);
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+refreshHistoryBtn.addEventListener("click", loadHistory);
 
 showAuthState();
