@@ -49,6 +49,26 @@ const patterns = [
     severity: "Medium",
     regex: /(secret|secret_key)\s*[:=]\s*["']?[^"'\s]+["']?/gi,
   },
+    {
+    type: "Private Key",
+    severity: "High",
+    regex: /-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/g,
+  },
+  {
+    type: "Slack Token",
+    severity: "High",
+    regex: /xox[baprs]-[A-Za-z0-9-]{10,}/g,
+  },
+  {
+    type: "SendGrid API Key",
+    severity: "High",
+    regex: /SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}/g,
+  },
+  {
+    type: "Database URL with Password",
+    severity: "High",
+    regex: /(mongodb(\+srv)?|postgres(ql)?|mysql):\/\/[^:\s]+:[^@\s]+@[^\s]+/gi,
+  },
 ];
 
 function maskValue(match) {
