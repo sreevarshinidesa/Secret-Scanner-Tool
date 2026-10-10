@@ -209,3 +209,27 @@ footer{
     color:#777;
     font-size:13px;
 }
+
+.auth-box {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.auth-box input {
+    padding: 8px;
+    margin: 4px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.auth-box button {
+    padding: 8px 14px;
+    margin: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#authMessage {
+    color: #c0392b;
+    font-size: 14px;
+}

@@ -130,3 +130,89 @@ downloadBtn.addEventListener("click",()=>{
     link.click();
 
 });
+
+// ---------- Login / Sign up ----------
+
+const BASE_URL = "http://localhost:5000";
+
+const emailInput = document.getElementById("emailInput");
+const passwordInput = document.getElementById("passwordInput");
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const loggedOut = document.getElementById("loggedOut");
+const loggedIn = document.getElementById("loggedIn");
+const userLabel = document.getElementById("userLabel");
+const authMessage = document.getElementById("authMessage");
+
+function showAuthState() {
+    const token = localStorage.getItem("token");
+    const email = localStorage.getItem("userEmail");
+
+    if (token) {
+        loggedOut.style.display = "none";
+        loggedIn.style.display = "block";
+        userLabel.textContent = "Logged in as " + email;
+    } else {
+        loggedOut.style.display = "block";
+        loggedIn.style.display = "none";
+    }
+}
+
+async function sendAuthRequest(path) {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        authMessage.textContent = "Please enter email and password.";
+        return null;
+    }
+
+    try {
+        const response = await fetch(BASE_URL + path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            authMessage.textContent = data.error || "Something went wrong.";
+            return null;
+        }
+
+        return { data, email };
+
+    } catch (err) {
+        authMessage.textContent = "Could not reach the server. Is it running?";
+        return null;
+    }
+}
+
+signupBtn.addEventListener("click", async () => {
+    const result = await sendAuthRequest("/register");
+    if (result) {
+        authMessage.textContent = "Account created. Now click Login.";
+    }
+});
+
+loginBtn.addEventListener("click", async () => {
+    const result = await sendAuthRequest("/login");
+    if (result) {
+        localStorage.setItem("token", result.data.token);
+        localStorage.setItem("userEmail", result.email);
+        passwordInput.value = "";
+        authMessage.textContent = "";
+        showAuthState();
+    }
+});
+
+logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
+    authMessage.textContent = "";
+    showAuthState();
+});
+
+showAuthState();

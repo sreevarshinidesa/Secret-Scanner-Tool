@@ -18,6 +18,22 @@
     Detect accidentally exposed passwords, API keys, tokens, and sensitive credentials before they become security risks.
 </p>
 
+        <div class="auth-box">
+            <div id="loggedOut">
+                <input type="email" id="emailInput" placeholder="Email">
+                <input type="password" id="passwordInput" placeholder="Password (min 6 characters)">
+                <button id="loginBtn">Login</button>
+                <button id="signupBtn">Sign up</button>
+            </div>
+
+            <div id="loggedIn" style="display:none;">
+                <span id="userLabel"></span>
+                <button id="logoutBtn">Logout</button>
+            </div>
+
+            <p id="authMessage"></p>
+        </div>
+
         <div class="upload-section">
             <input type="file" id="fileInput" multiple>
             <button id="scanBtn">Scan Files</button>
