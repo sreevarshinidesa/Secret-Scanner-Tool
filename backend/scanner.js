@@ -91,6 +91,9 @@ function shannonEntropy(str) {
 
 const ENTROPY_THRESHOLD = 4.3;
 
+const SAFE_VALUE = /(process\.env|os\.environ|getenv|\$\{|<[A-Za-z_ ]+>|your[_-]|changeme|placeholder)/i;
+const VALUE_PATTERNS = ["Password", "API Key", "Secret Key"];
+
 
 function scanText(text) {
   const findings = [];
@@ -106,7 +109,10 @@ function scanText(text) {
       // Skip the generic "API Key" check if it is really a Google API key
       if (pattern.type === "API Key" && /AIza/.test(line)) return;
 
-      matches.forEach((match) => {
+            matches.forEach((match) => {
+        // Skip safe code like process.env.X or placeholder values
+        if (VALUE_PATTERNS.includes(pattern.type) && SAFE_VALUE.test(match)) return;
+
         foundOnLine = true;
         findings.push({
           line: index + 1,
