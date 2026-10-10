@@ -6,6 +6,7 @@ const scanSchema = new mongoose.Schema(
     fileName: { type: String, default: "pasted text" },
         findings: [
       {
+        file: String,
         line: Number,
         type: { type: String },
         severity: String,

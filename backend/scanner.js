@@ -32,7 +32,8 @@ const patterns = [
   {
     type: "Bearer Token",
     severity: "Medium",
-    regex: /Bearer\s+[A-Za-z0-9\-._~+/=]+/gi,
+    regex: /Bearer\s+[A-Za-z0-9\-._~+/=]{20,}/gi,
+    
   },
   {
     type: "OpenAI API Key",
@@ -94,8 +95,11 @@ const ENTROPY_THRESHOLD = 4.3;
 const SAFE_VALUE = /(process\.env|os\.environ|getenv|\$\{|<[A-Za-z_ ]+>|your[_-]|changeme|placeholder)/i;
 const VALUE_PATTERNS = ["Password", "API Key", "Secret Key"];
 
+// In code files, a password/key must be a quoted string to count
+const CODE_FILE = /\.(js|jsx|ts|tsx|py|java|c|cpp|cs|go|rb|php|md|html|css)$/i;
+const QUOTED_VALUE = /[:=]\s*["'][^"']+["']/;
 
-function scanText(text) {
+function scanText(text, fileName = "") {
   const findings = [];
   const lines = text.split("\n");
 
@@ -109,9 +113,16 @@ function scanText(text) {
       // Skip the generic "API Key" check if it is really a Google API key
       if (pattern.type === "API Key" && /AIza/.test(line)) return;
 
-            matches.forEach((match) => {
+      matches.forEach((match) => {
         // Skip safe code like process.env.X or placeholder values
         if (VALUE_PATTERNS.includes(pattern.type) && SAFE_VALUE.test(match)) return;
+
+        // In code files, skip values that are not quoted strings
+        if (
+          VALUE_PATTERNS.includes(pattern.type) &&
+          CODE_FILE.test(fileName) &&
+          !QUOTED_VALUE.test(match)
+        ) return;
 
         foundOnLine = true;
         findings.push({
@@ -125,7 +136,8 @@ function scanText(text) {
 
     // If no known pattern matched, look for random-looking long strings
     if (!foundOnLine) {
-      const candidates = line.match(/[A-Za-z0-9+/=_-]{20,}/g) || [];
+      const lineWithoutUrls = line.replace(/https?:\/\/\S+/g, "");
+      const candidates = lineWithoutUrls.match(/[A-Za-z0-9+/=_-]{20,}/g) || [];
 
       candidates.forEach((candidate) => {
         if (shannonEntropy(candidate) >= ENTROPY_THRESHOLD) {

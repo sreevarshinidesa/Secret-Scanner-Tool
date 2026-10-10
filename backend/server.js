@@ -10,6 +10,7 @@ const User = require("./models/User");
 const jwt = require("jsonwebtoken");
 const Scan = require("./models/Scan");
 const { optionalAuth, requireAuth } = require("./middleware/auth");
+const { scanRepo } = require("./githubScanner");
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.post("/scan", optionalAuth, async (req, res) => {
       return res.status(400).json({ error: "No text provided" });
     }
 
-    const findings = scanText(text);
+    const findings = scanText(text, fileName);
 
     // Save the scan only if the user is logged in
     if (req.userId) {
@@ -44,6 +45,33 @@ app.post("/scan", optionalAuth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post("/scan-repo", optionalAuth, async (req, res) => {
+  try {
+    const { repoUrl } = req.body;
+
+    if (!repoUrl) {
+      return res.status(400).json({ error: "No repo link provided" });
+    }
+
+    const result = await scanRepo(repoUrl);
+
+    // Save to history only if logged in
+    if (req.userId) {
+      await Scan.create({
+        user: req.userId,
+        fileName: result.repoName,
+        findings: result.findings,
+        totalFindings: result.findings.length,
+      });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
 });
 
