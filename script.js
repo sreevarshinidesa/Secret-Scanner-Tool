@@ -14,7 +14,7 @@ let reportData = [];
 
 
 
-const API_URL = "http://localhost:5000/scan";
+const API_URL = "/scan";
 
 scanBtn.addEventListener("click", async () => {
 
@@ -140,7 +140,7 @@ downloadBtn.addEventListener("click",()=>{
 
 // ---------- Login / Sign up ----------
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "";
 
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
@@ -279,3 +279,116 @@ async function loadHistory() {
 refreshHistoryBtn.addEventListener("click", loadHistory);
 
 showAuthState();
+
+// ---------- Scan a GitHub repo ----------
+
+const repoInput = document.getElementById("repoInput");
+const repoBtn = document.getElementById("repoBtn");
+
+repoBtn.addEventListener("click", async () => {
+
+    const repoUrl = repoInput.value.trim();
+
+    if (!repoUrl) {
+        alert("Please paste a GitHub repo link.");
+        return;
+    }
+
+    repoBtn.disabled = true;
+    repoBtn.textContent = "Scanning...";
+
+    try {
+
+        const token = localStorage.getItem("token");
+        const headers = { "Content-Type": "application/json" };
+        if (token) {
+            headers["Authorization"] = "Bearer " + token;
+        }
+
+        const response = await fetch(BASE_URL + "/scan-repo", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({ repoUrl })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "Could not scan this repo.");
+            return;
+        }
+
+        resultBody.innerHTML = "";
+        reportData = [];
+
+        let high = 0;
+        let medium = 0;
+
+        data.findings.forEach(f => {
+
+            if (f.severity === "High") high++;
+            else medium++;
+
+            reportData.push({
+                file: f.file,
+                line: f.line,
+                type: f.type,
+                severity: f.severity,
+                value: f.value
+            });
+
+            // Build the row safely: file names come from someone else's repo
+            const row = document.createElement("tr");
+
+            [f.file, f.line, f.type, f.severity, f.value].forEach((value, i) => {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                if (i === 3) cell.className = f.severity.toLowerCase();
+                row.appendChild(cell);
+            });
+
+            resultBody.appendChild(row);
+        });
+
+        const total = data.findings.length;
+
+        filesCount.textContent = data.filesScanned;
+        secretCount.textContent = total;
+        highCount.textContent = high;
+        mediumCount.textContent = medium;
+
+        resultTable.style.display = total ? "table" : "none";
+        downloadBtn.style.display = total ? "block" : "none";
+
+        const note = data.truncated
+            ? "<br>Note: only the first 100 files were scanned."
+            : "";
+
+        if (total === 0) {
+            summary.innerHTML = `
+<div class="no-secret">
+<b>✅ Repo Scan Completed</b><br><br>
+Files Scanned : ${data.filesScanned}<br>
+Secrets Detected : 0<br>
+Status : No Sensitive Information Found${note}
+</div>`;
+        } else {
+            summary.innerHTML = `
+<div class="secret-found">
+<b>⚠ Repo Scan Completed</b><br><br>
+Files Scanned : ${data.filesScanned}<br>
+Secrets Detected : ${total}<br>
+Status : Potential Secret Exposure Detected${note}
+</div>`;
+        }
+
+        loadHistory();
+
+    } catch (err) {
+        alert("Could not reach the server. Is it running?");
+        console.error(err);
+    } finally {
+        repoBtn.disabled = false;
+        repoBtn.textContent = "Scan GitHub Repo";
+    }
+});

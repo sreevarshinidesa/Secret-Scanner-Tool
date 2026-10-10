@@ -250,3 +250,21 @@ footer{
     border-bottom: 1px solid #ddd;
     text-align: left;
 }
+
+.repo-section {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.repo-section input {
+    padding: 8px;
+    width: 60%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.repo-section button {
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
