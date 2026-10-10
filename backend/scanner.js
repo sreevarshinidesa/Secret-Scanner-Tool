@@ -75,11 +75,30 @@ function maskValue(match) {
   return match.length > 10 ? match.substring(0, 5) + "********" : "********";
 }
 
+function shannonEntropy(str) {
+  const counts = {};
+  for (const ch of str) {
+    counts[ch] = (counts[ch] || 0) + 1;
+  }
+
+  let entropy = 0;
+  for (const ch in counts) {
+    const p = counts[ch] / str.length;
+    entropy -= p * Math.log2(p);
+  }
+  return entropy;
+}
+
+const ENTROPY_THRESHOLD = 4.3;
+
+
 function scanText(text) {
   const findings = [];
   const lines = text.split("\n");
 
   lines.forEach((line, index) => {
+    let foundOnLine = false;
+
     patterns.forEach((pattern) => {
       const matches = line.match(pattern.regex);
       if (!matches) return;
@@ -88,6 +107,7 @@ function scanText(text) {
       if (pattern.type === "API Key" && /AIza/.test(line)) return;
 
       matches.forEach((match) => {
+        foundOnLine = true;
         findings.push({
           line: index + 1,
           type: pattern.type,
@@ -96,6 +116,22 @@ function scanText(text) {
         });
       });
     });
+
+    // If no known pattern matched, look for random-looking long strings
+    if (!foundOnLine) {
+      const candidates = line.match(/[A-Za-z0-9+/=_-]{20,}/g) || [];
+
+      candidates.forEach((candidate) => {
+        if (shannonEntropy(candidate) >= ENTROPY_THRESHOLD) {
+          findings.push({
+            line: index + 1,
+            type: "High Entropy String",
+            severity: "Medium",
+            value: maskValue(candidate),
+          });
+        }
+      });
+    }
   });
 
   return findings;
