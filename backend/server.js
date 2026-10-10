@@ -8,6 +8,8 @@ const { scanText } = require("./scanner");
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
 const jwt = require("jsonwebtoken");
+const Scan = require("./models/Scan");
+const { optionalAuth, requireAuth } = require("./middleware/auth");
 
 const app = express();
 
@@ -18,15 +20,41 @@ app.get("/", (req, res) => {
   res.send("Server is working");
 });
 
-app.post("/scan", (req, res) => {
-  const { text } = req.body;
+app.post("/scan", optionalAuth, async (req, res) => {
+  try {
+    const { text, fileName } = req.body;
 
-  if (!text) {
-    return res.status(400).json({ error: "No text provided" });
+    if (!text) {
+      return res.status(400).json({ error: "No text provided" });
+    }
+
+    const findings = scanText(text);
+
+    // Save the scan only if the user is logged in
+    if (req.userId) {
+      await Scan.create({
+        user: req.userId,
+        fileName: fileName || "pasted text",
+        findings,
+        totalFindings: findings.length,
+      });
+    }
+
+    res.json({ findings });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
+});
 
-  const findings = scanText(text);
-  res.json({ findings });
+app.get("/scans", requireAuth, async (req, res) => {
+  try {
+    const scans = await Scan.find({ user: req.userId }).sort({ createdAt: -1 });
+    res.json({ scans });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 app.post("/register", async (req, res) => {
