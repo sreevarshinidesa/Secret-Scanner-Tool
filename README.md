@@ -1,6 +1,8 @@
 <!-- README START -->
 # 🔒 Secret Scanner Tool
 
+**Live demo:** https://secret-scanner-tool.onrender.com
+
 A full-stack security tool that detects accidentally exposed passwords, API keys, tokens, and other credentials in uploaded files and public GitHub repositories, before they become security risks.
 
 > ⚠️ The `sample-files/` folder contains **fake** credentials for testing and demos only.
@@ -13,6 +15,7 @@ A full-stack security tool that detects accidentally exposed passwords, API keys
 ### Scan history
 ![Scan history](screenshots/history.png)
 
+> The 7 findings when scanning this repo come from `sample-files/`, which contains fake secrets on purpose so the scanner has something to detect.
 ## Features
 
 - **File scanning:** upload one or more files and scan them for exposed secrets
